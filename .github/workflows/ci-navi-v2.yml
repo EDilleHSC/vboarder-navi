@@ -13,8 +13,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
+      - name: Debug directory
+        run: |
+          pwd
+          ls -la
       - name: Install dependencies
-        working-directory: import
         run: npm ci
       - name: Run routing smoke
         run: |
@@ -35,8 +38,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
+      - name: Debug directory
+        run: |
+          pwd
+          ls -la
       - name: Install dependencies
-        working-directory: import
         run: npm ci
       - name: Assert snapshot integrity
         run: node scripts/ci/assert_snapshot.js
@@ -66,8 +72,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
+      - name: Debug directory
+        run: |
+          pwd
+          ls -la
       - name: Install dependencies
-        working-directory: import
         run: npm ci
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
