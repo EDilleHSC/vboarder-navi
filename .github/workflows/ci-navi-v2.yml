@@ -1,0 +1,75 @@
+name: CI - NAVI v2 Alignment
+
+on:
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  routing-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - run: npm ci
+      - name: Run routing smoke
+        run: |
+          node runtime/current/router.js --dry-run > router_last_run.json
+          node -e "const j=require('./router_last_run.json'); if (!j || j.status!=='ok') { console.error('Routing smoke failed', j); process.exit(1) } else { console.log('Routing smoke ok') }"
+      - name: Upload router output (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: router_last_run
+          path: router_last_run.json
+
+  snapshot-integrity:
+    runs-on: ubuntu-latest
+    needs: routing-smoke
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - run: npm ci
+      - name: Assert snapshot integrity
+        run: node scripts/ci/assert_snapshot.js
+      - name: Upload latest snapshot (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-json
+          path: NAVI/snapshots/inbox/*.json
+
+  inbox-empty-check:
+    runs-on: ubuntu-latest
+    needs: snapshot-integrity
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert inbox cleared
+        run: node scripts/ci/assert_inbox_empty.js
+      - name: Upload inbox listing (always)
+        if: always()
+        run: ls -la "NAVI/inbox" || true
+
+  playwright-smoke:
+    runs-on: ubuntu-latest
+    needs: routing-smoke
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - run: npm ci
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright smoke tests (@smoke)
+        run: npx playwright test --grep @smoke --reporter=list
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: playwright-report || ''

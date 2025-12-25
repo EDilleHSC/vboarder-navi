@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>NAVI Mail Room Update</title>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0e27;
+            color: #f0f0f0;
+            font-family: 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 32px 24px;
+            line-height: 1.8;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* HEADER */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 40px;
+            padding-bottom: 24px;
+            border-bottom: 3px solid #1e2749;
+        }
+
+        .header-icon {
+            font-size: 32px;
+        }
+
+        .header-content h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+        }
+
+        .header-content p {
+            font-size: 16px;
+            color: #a0a8c0;
+        }
+
+        /* SUMMARY CARD */
+        .summary-card {
+            background: #0f1433;
+            border-left: 5px solid #4a90e2;
+            padding: 24px;
+            margin-bottom: 32px;
+            border-radius: 8px;
+        }
+
+        .summary-card h2 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: #e8e8ff;
+        }
+
+        .summary-card p {
+            font-size: 18px;
+            color: #c8d0e0;
+            margin-bottom: 8px;
+        }
+
+        /* MAIN CONTENT GRID - 300px LEFT, 1fr RIGHT */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 32px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* FILE CARD */
+        .file-card {
+            background: #0f1433;
+            border-left: 5px solid #f5a623;
+            padding: 28px;
+            border-radius: 8px;
+        }
+
+        .file-card h3 {
+            font-size: 22px;
+            margin-bottom: 20px;
+            color: #ffd700;
+            font-weight: 700;
+        }
+
+        .file-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+
+        .meta-item {
+            display: flex;
+            gap: 12px;
+            align-items: baseline;
+        }
+
+        .meta-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #a0a8c0;
+            min-width: 100px;
+        }
+
+        .meta-value {
+            font-size: 18px;
+            color: #f0f0f0;
+        }
+
+        .confidence-badge {
+            display: inline-block;
+            background: rgba(74, 192, 74, 0.2);
+            border: 1px solid #4ac04a;
+            color: #7cff7c;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* ACTIONS COLUMN - VERTICAL STACK */
+        .actions-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 20px;
+            border: 2px solid;
+            border-radius: 8px;
+            background: #0f1433;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 600;
+            font-family: 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .action-icon {
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        .action-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .action-title {
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .action-desc {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* TRACK (GREEN) */
+        .btn-track {
+            border-color: #4ac04a;
+            color: #7cff7c;
+        }
+
+        .btn-track:hover {
+            background: rgba(74, 192, 74, 0.1);
+        }
+
+        /* HOLD (YELLOW) */
+        .btn-hold {
+            border-color: #f5a623;
+            color: #ffc107;
+        }
+
+        .btn-hold:hover {
+            background: rgba(245, 166, 35, 0.1);
+        }
+
+        /* ESCALATE (RED) */
+        .btn-escalate {
+            border-color: #e74c3c;
+            color: #ff6b6b;
+        }
+
+        .btn-escalate:hover {
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        /* REASONING SECTION */
+        .reasoning {
+            background: #0f1433;
+            border-left: 5px solid #4a90e2;
+            padding: 28px;
+            border-radius: 8px;
+            margin-bottom: 32px;
+        }
+
+        .reasoning h4 {
+            font-size: 20px;
+            margin-bottom: 18px;
+            color: #e8e8ff;
+            font-weight: 700;
+        }
+
+        .reason-list {
+            list-style: none;
+        }
+
+        .reason-item {
+            font-size: 16px;
+            margin-bottom: 12px;
+            padding-left: 32px;
+            position: relative;
+            color: #c8d0e0;
+            line-height: 1.6;
+        }
+
+        .reason-item::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            font-size: 24px;
+            color: #4a90e2;
+            line-height: 1;
+        }
+
+        /* FOOTER */
+        .footer {
+            background: #0f1433;
+            border-top: 2px solid #1e2749;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #7a8299;
+            line-height: 1.8;
+        }
+
+        .footer-item {
+            margin-bottom: 8px;
+        }
+
+        .footer-item:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="header-icon">📬</div>
+            <div class="header-content">
+                <h1>NAVI Mail Room Update</h1>
+                <p id="snapshot-info">Processed at N/A</p>
+            </div>
+        </div>
+        
+        <!-- SUMMARY -->
+        <div class="summary-card">
+            <h2>Summary</h2>
+            <p id="summary-count">0 incoming requests processed</p>
+            <p>Items routed to ACTIVE, WAITING, or DONE</p>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="content-grid">
+            <!-- LEFT: ACTIONS (VERTICAL BUTTONS) -->
+            <div class="actions-section">
+                <button class="action-btn btn-track" id="track-btn">
+                    <div class="action-icon">🟢</div>
+                    <div class="action-text">
+                        <div class="action-title">Track</div>
+                        <div class="action-desc">Accept responsibility</div>
+                    </div>
+                </button>
+
+                <button class="action-btn btn-hold" id="hold-btn">
+                    <div class="action-icon">🟡</div>
+                    <div class="action-text">
+                        <div class="action-title">Hold</div>
+                        <div class="action-desc">Not actionable now</div>
+                    </div>
+                </button>
+
+                <button class="action-btn btn-escalate" id="escalate-btn">
+                    <div class="action-icon">🔴</div>
+                    <div class="action-text">
+                        <div class="action-title">Escalate</div>
+                        <div class="action-desc">Deadlines · Delegation · Fire drills</div>
+                    </div>
+                </button>
+            </div>
+
+            <!-- RIGHT: FILE LIST -->
+            <div id="file-list"></div>
+        </div>
+
+        <!-- REASONING -->
+        <div class="reasoning">
+            <h4>Why did NAVI think this?</h4>
+            <ul class="reason-list">
+                <li class="reason-item">Matched priority keywords: <strong>important, urgent, priority</strong></li>
+                <li class="reason-item">File type allowed for work intake</li>
+                <li class="reason-item">No exclusion rules triggered</li>
+                <li class="reason-item">No conflicting signals detected</li>
+            </ul>
+        </div>
+        
+        <!-- FOOTER -->
+        <div class="footer">
+            <div class="footer-item">✓ Presenter is advisory only</div>
+            <div class="footer-item">✓ No files moved or modified</div>
+            <div class="footer-item">✓ Human decisions applied separately</div>
+            <div class="footer-item">✓ Inbox accepts work items only</div>
+            <div class="footer-item">✓ Review opens file location only</div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchAudit(){
+            const res = await fetch('/approvals/audit');
+            if(!res.ok) return [];
+            return await res.json();
+        }
+
+        function renderFileCard(file, info){
+            const el = document.createElement('div');
+            el.className = 'file-card';
+            el.innerHTML = `
+                <h3>📄 ${file}</h3>
+                <div class="file-meta">
+                    <div class="meta-item"><span class="meta-label">Routed to:</span><span class="meta-value">${info.decision || 'ACTIVE'}</span></div>
+                    <div class="meta-item"><span class="meta-label">Confidence:</span><span class="confidence-badge">${info.confidence || '90% (High)'}</span></div>
+                    <div class="meta-item"><span class="meta-label">File type:</span><span class="meta-value">${file.split('.').pop().toUpperCase()}</span></div>
+                    <div class="meta-item"><span class="meta-label">Received:</span><span class="meta-value">${(info.timestamp || '').slice(0,10) || 'N/A'}</span></div>
+                </div>
+                <div style="display:flex;gap:10px;">
+                  <button class="open-file" data-file="${file}">Open</button>
+                  <button class="preview-file" data-file="${file}">Preview</button>
+                  <button class="small-action" data-file="${file}" data-decision="Track">Track</button>
+                  <button class="small-action" data-file="${file}" data-decision="Hold">Hold</button>
+                  <button class="small-action" data-file="${file}" data-decision="Escalate">Escalate</button>
+                </div>
+            `;
+            return el;
+        }
+
+        async function refresh(){
+            const entries = await fetchAudit();
+            const map = new Map();
+            for(const e of entries) if(!map.has(e.file)) map.set(e.file, e);
+            const list = document.getElementById('file-list');
+            list.innerHTML = '';
+            for(const [file, info] of map){
+                list.appendChild(renderFileCard(file, info));
+            }
+            document.querySelectorAll('.small-action').forEach(b => b.addEventListener('click', onSmallAction));
+            document.querySelectorAll('.open-file').forEach(b => b.addEventListener('click', e => window.open('/' + e.target.dataset.file, '_blank')));
+            document.querySelectorAll('.preview-file').forEach(b => b.addEventListener('click', e => { alert('Preview placeholder'); }));
+            document.getElementById('summary-count').textContent = `${map.size} incoming requests processed`;
+            document.getElementById('snapshot-info').textContent = `Processed at ${new Date().toLocaleTimeString()}`;
+        }
+
+        async function postApproval(payload){
+            const token = document.getElementById('token')?.value || '';
+            const res = await fetch('/approval', { method:'POST', headers:{ 'Content-Type':'application/json', 'X-MCP-APPROVAL-TOKEN': token }, body: JSON.stringify(payload) });
+            return res;
+        }
+
+        async function onSmallAction(e){
+            const file = e.target.dataset.file;
+            const decision = e.target.dataset.decision;
+            let notes = '';
+            if (typeof window.__TEST_PROMPT !== 'undefined') { notes = window.__TEST_PROMPT || ''; }
+            else { notes = prompt(`Notes for ${decision} on ${file}:`) || ''; }
+            const res = await postApproval({ approvedBy: 'MailRoom', status: decision, file, notes });
+            if(res.status === 201) { await refresh(); alert('Approval recorded'); }
+            else { alert('Approval failed: ' + await res.text()); }
+        }
+
+        refresh();
+        setInterval(refresh, 6000);
+    </script>
+</body>
+</html>

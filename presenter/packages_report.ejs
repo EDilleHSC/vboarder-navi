@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>NAVI Packages — Server-rendered Report</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:#071423; color:#d6eefc; margin:18px; }
+    .panel { background:#071423; border:1px solid #0f2a3f; padding:14px; border-radius:8px; margin-bottom:14px; }
+    table { width:100%; border-collapse:collapse; margin-top:12px; }
+    th, td { padding:8px 10px; text-align:left; border-bottom:1px dashed rgba(200,220,255,0.04); }
+    .muted { color:#9fb0c8; font-size:13px; }
+    .btn { display:inline-block; padding:6px 10px; border-radius:6px; background:#17c964; color:#012; font-weight:700; text-decoration:none; margin-right:8px; }
+    .two-col { display:grid; grid-template-columns: 1fr 420px; gap:18px; align-items:start; }
+    .file-list { padding-left:18px; margin:6px 0; }
+    pre.readme { white-space:pre-wrap; background:#061426; padding:10px; border-radius:6px; border:1px solid #0f2a3f; color:#d6eefc; max-height:260px; overflow:auto; }
+    .timeline { font-size:13px; color:#bfe6c6; margin-top:8px; padding:8px; border-radius:6px; background:#071b1a; border:1px solid #0f2a3f; }
+  </style>
+</head>
+<body>
+  <div class="panel">
+    <h1>Packages Report (Server Rendered)</h1>
+    <form id="batch-form" method="get" action="/presenter/packages_report">
+      <label for="batch">Batch ID</label>
+      <input id="batch" name="batch" value="<%= batchId %>" placeholder="package_2025-12-23_11-38-39" />
+      <button class="btn" type="submit">Load</button>
+      <span class="muted">Server-rendered initial package list; click a row to fetch package details & audit timelines.</span>
+    </form>
+
+    <table aria-label="Server-side batch table">
+      <thead><tr><th>Package</th><th>Files</th><th>Size</th><th>Created</th></tr></thead>
+      <tbody>
+        <% if (!packages || packages.length === 0) { %>
+          <tr><td colspan="4" class="muted">No packages found for this batch</td></tr>
+        <% } else { %>
+          <% packages.forEach(function(p){ %>
+            <tr class="package-row" data-pkg="<%= p.id %>"><td><%= p.id %></td><td><%= p.files %></td><td><%= (p.sizeBytes/1024).toFixed(1) %> KB</td><td><%= p.createdAt %></td></tr>
+          <% }); %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <h3>Package Detail</h3>
+      <div id="pkg-title">Select a package from the table</div>
+      <h4>Files</h4>
+      <ul id="files" class="file-list"></ul>
+      <h4>README</h4>
+      <pre id="readme" class="readme">—</pre>
+    </div>
+
+    <div class="panel">
+      <h3>File Audit Timeline</h3>
+      <div id="timeline">Select a file to see its audit timeline</div>
+    </div>
+  </div>
+
+  <script>
+    // minimal client JS: wire clicks to fetch package report and show per-file timeline
+    document.querySelectorAll('.package-row').forEach(r => {
+      r.addEventListener('click', () => loadPackage(r.dataset.pkg));
+    });
+
+    async function loadPackage(pkg) {
+      try {
+        const res = await fetch(`/api/packages/${encodeURIComponent(pkg)}/report`);
+        if (!res.ok) throw new Error('failed');
+        const json = await res.json();
+        document.getElementById('pkg-title').textContent = json.package;
+        document.getElementById('readme').textContent = json.readme || 'No README.';
+        const filesEl = document.getElementById('files');
+        filesEl.innerHTML = '';
+        (json.files || []).forEach(f => {
+          const li = document.createElement('li');
+          const btn = document.createElement('button');
+          btn.textContent = f.filename;
+          btn.style.padding = '6px'; btn.style.marginRight='8px';
+          btn.addEventListener('click', () => showTimeline(f.filename, json.fileTimelines || {}));
+          li.appendChild(btn);
+          li.appendChild(document.createTextNode(' — ' + f.route));
+          filesEl.appendChild(li);
+        });
+      } catch (err) {
+        console.error(err); alert('Failed to load package');
+      }
+    }
+
+    function showTimeline(filename, fileTimelines) {
+      const t = fileTimelines[filename] || [];
+      const el = document.getElementById('timeline');
+      if (t.length === 0) { el.innerHTML = '<div class="muted">No audits for this file</div>'; return; }
+      const html = t.map(a => `<div class="timeline"><strong>${a.action||a.status||a.type||''}</strong> — <span class="muted">${a.timestamp||a.time||''}</span><div>${a.note || a.message || JSON.stringify(a)}</div></div>`).join('\n');
+      el.innerHTML = html;
+    }
+  </script>
+</body>
+</html>

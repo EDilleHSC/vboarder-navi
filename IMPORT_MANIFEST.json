@@ -1,0 +1,35 @@
+{
+  "generatedAt": "2025-12-24T23:30:46.733Z",
+  "included": [
+    "runtime/current/router.js",
+    "runtime/current/lib/batch_log.js",
+    "runtime/current/lib",
+    "tests/helpers/startTestServer.js",
+    "tests/integration/batch_end_to_end.test.js",
+    "tests/integration/batch_log_failure.test.js",
+    "tests/integration/router_integration.test.js",
+    "tests/unit/batch_log.test.js",
+    "tests/unit/router.decide.test.js",
+    "tests/unit/router.v2.test.js",
+    "tests/unit",
+    "tests/integration",
+    "tests/helpers",
+    "scripts/ci/assert_snapshot.js",
+    "scripts/ci/assert_inbox_empty.js",
+    ".github/workflows/ci-navi-v2.yml",
+    "package.json",
+    "README.md",
+    "scripts/serve_presenter.js",
+    "presenter",
+    "presenter/*.html"
+  ],
+  "excludes": [
+    "approval",
+    "demo",
+    "review_required",
+    "approvals",
+    "approve",
+    "design-approval",
+    "ui-approval"
+  ]
+}

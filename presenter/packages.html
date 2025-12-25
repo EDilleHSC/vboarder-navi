@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NAVI Packages</title>
+  <style>
+    body{background:#0a0e27;color:#e0e0e0;font-family:Segoe UI,Segoe,Arial;margin:24px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #222}
+    th{color:#86efac;text-align:left}
+    .btn{background:#4ade80;color:#000;padding:6px 10px;border-radius:4px;border:none;cursor:pointer}
+    .link{color:#7cff7c;cursor:pointer}
+    pre{background:#07102a;padding:8px;border-radius:6px;overflow:auto}
+  </style>
+</head>
+<body>
+  <h1>NAVI Packages</h1>
+  <section id="package-summary">
+    <table>
+      <thead>
+        <tr><th>Package</th><th>Created</th><th>Files</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="package-list-body"></tbody>
+    </table>
+  </section>
+  <section id="package-details" style="display:none;margin-top:20px;">
+    <button class="btn" onclick="showSummary()">← Back</button>
+    <h2 id="package-title"></h2>
+    <table>
+      <thead><tr><th>Filename</th><th>Route</th><th>Applied</th><th>Snippet</th></tr></thead>
+      <tbody id="package-files-body"></tbody>
+    </table>
+    <h3>Sidecar</h3>
+    <pre id="sidecar-content">Select a file to view sidecars</pre>
+  </section>
+
+  <section id="cache-panel" style="margin-top:24px;">
+    <h2>Cache Status</h2>
+    <button class="btn" onclick="refreshCache()">Refresh</button>
+    <table style="margin-top:8px;">
+      <thead><tr><th>Package</th><th>Status</th><th>Size</th><th>Zip mtime</th><th>Latest file mtime</th><th>TTL s</th><th>Locked</th><th>Actions</th></tr></thead>
+      <tbody id="cache-body"></tbody>
+    </table>
+  </section>
+
+  <script>
+    async function fetchPackages(){
+      const res = await fetch('/api/packages');
+      return res.ok ? res.json() : [];
+    }
+    async function fetchPackageFiles(pkg){
+      const res = await fetch(`/api/packages/${encodeURIComponent(pkg)}/files`);
+      return res.ok ? res.json() : [];
+    }
+    async function fetchSidecars(pkg, filename){
+      const res = await fetch(`/api/packages/${encodeURIComponent(pkg)}/files/${encodeURIComponent(filename)}`);
+      return res.ok ? res.json() : {};
+    }
+
+    async function init(){
+      const pkgs = await fetchPackages();
+      const tbody = document.getElementById('package-list-body');
+      pkgs.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td class="link" onclick="loadDetails('${p.name}')">${p.name}</td><td>${new Date(p.createdAt).toLocaleString()}</td><td>${p.fileCount}</td><td><button class="btn" onclick="downloadPackage('${p.name}')">Download ZIP</button></td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function loadDetails(name){
+      document.getElementById('package-title').textContent = name;
+      document.getElementById('package-title').textContent = name;
+      document.getElementById('package-summary').style.display = 'none';
+      document.getElementById('package-details').style.display = 'block';
+      const files = await fetchPackageFiles(name);
+      const tbody = document.getElementById('package-files-body'); tbody.innerHTML = '';
+      files.forEach(f => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td class="link" onclick="showSidecar('${name}','${f.filename.replace(/'/g,"\\'")}')">${f.filename}</td><td>${f.route}</td><td>${f.applied_at||''}</td><td>${f.snippet||''}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function showSidecar(pkg, filename){
+      const s = await fetchSidecars(pkg, filename);
+      document.getElementById('sidecar-content').textContent = JSON.stringify(s, null, 2);
+    }
+
+    function downloadPackage(name){
+      const url = `/api/packages/${encodeURIComponent(name)}/download`;
+      // open in a new tab to trigger download
+      window.open(url, '_blank');
+    }
+
+    async function refreshCache(){
+      const res = await fetch('/api/packages/cache/status');
+      if (!res.ok) return;
+      const data = await res.json();
+      const tbody = document.getElementById('cache-body'); tbody.innerHTML = '';
+      data.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${c.pkgName}</td><td>${c.status}</td><td>${c.zipSizeBytes}</td><td>${c.zipMtime||''}</td><td>${c.packageLatestFileMtime||''}</td><td>${c.ttlRemainingSeconds||''}</td><td>${c.locked}</td><td><button class="btn" onclick="purgeCache('${c.pkgName}')">Purge</button></td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function purgeCache(pkg){
+      const res = await fetch(`/api/packages/${encodeURIComponent(pkg)}/cache/purge`, { method: 'POST' });
+      if (res.status === 204) { alert('Purged'); refreshCache(); } else { alert('Purge failed'); }
+    }
+
+    // auto-refresh cache status on load
+    setTimeout(refreshCache, 400);
+
+    function showSummary(){ document.getElementById('package-summary').style.display='block'; document.getElementById('package-details').style.display='none'; }
+
+    init();
+  </script>
+</body>
+</html>
