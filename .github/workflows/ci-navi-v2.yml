@@ -13,7 +13,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - run: npm ci
+      - name: Install dependencies
+        working-directory: import
+        run: npm ci
       - name: Run routing smoke
         run: |
           node runtime/current/router.js --dry-run > router_last_run.json
@@ -33,7 +35,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - run: npm ci
+      - name: Install dependencies
+        working-directory: import
+        run: npm ci
       - name: Assert snapshot integrity
         run: node scripts/ci/assert_snapshot.js
       - name: Upload latest snapshot (always)
@@ -62,7 +66,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '18'
-      - run: npm ci
+      - name: Install dependencies
+        working-directory: import
+        run: npm ci
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
       - name: Run Playwright smoke tests (@smoke)
