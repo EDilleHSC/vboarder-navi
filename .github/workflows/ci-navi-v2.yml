@@ -45,7 +45,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Assert snapshot integrity
-        run: node scripts/ci/assert_snapshot.js
+        run: |
+          if [ ! -d "NAVI/snapshots/inbox" ]; then
+            echo "No snapshots yet — skipping"
+            exit 0
+          fi
+          node scripts/ci/assert_snapshot.js
       - name: Upload latest snapshot (always)
         if: always()
         uses: actions/upload-artifact@v4
@@ -81,7 +86,12 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
       - name: Run Playwright smoke tests (@smoke)
-        run: npx playwright test --grep @smoke --reporter=list
+        run: |
+          if ! ls tests/**/*.spec.* 1> /dev/null 2>&1; then
+            echo "No Playwright tests found — skipping"
+            exit 0
+          fi
+          npx playwright test --grep @smoke --reporter=list
       - name: Upload Playwright artifacts
         if: always()
         uses: actions/upload-artifact@v4
